@@ -1,6 +1,5 @@
 stm32_smartcharge\ina219.o: ..\Core\Src\ina219.c
 stm32_smartcharge\ina219.o: ../Core/Inc/ina219.h
-stm32_smartcharge\ina219.o: ../Core/Inc/i2c.h
 stm32_smartcharge\ina219.o: ../Core/Inc/main.h
 stm32_smartcharge\ina219.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 stm32_smartcharge\ina219.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -32,3 +31,4 @@ stm32_smartcharge\ina219.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pw
 stm32_smartcharge\ina219.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 stm32_smartcharge\ina219.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 stm32_smartcharge\ina219.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+stm32_smartcharge\ina219.o: ../Core/Inc/i2c.h
