@@ -395,6 +395,21 @@
           <GroupName>Application/User/Core</GroupName>
           <Files>
             <File>
+              <FileName>oled.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>mqtt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\mqtt.c</FilePath>
+            </File>
+            <File>
+              <FileName>ina219.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\ina219.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -443,21 +458,6 @@
               <FileName>stm32f1xx_hal_timebase_tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f1xx_hal_timebase_tim.c</FilePath>
-            </File>
-            <File>
-              <FileName>oled.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\oled.c</FilePath>
-            </File>
-            <File>
-              <FileName>mqtt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\mqtt.c</FilePath>
-            </File>
-            <File>
-              <FileName>ina219.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\ina219.c</FilePath>
             </File>
           </Files>
         </Group>
