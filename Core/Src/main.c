@@ -27,7 +27,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "oled.h"
+#include "ina219.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +99,10 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  INA219_Init(); 
 
+  OLED_Init();       
+  OLED_Clear();      
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
@@ -116,6 +120,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+  }
+  while (1)
+  {
+    
+      float v = INA219_GetVoltage();
+      float c = INA219_GetCurrent();
+
+      
+      OLED_Printf(0, 0, OLED_8X16, "Volt: %.2fV", v);
+      
+     
+      OLED_Printf(0, 16, OLED_8X16, "Curr: %.2f", c); 
+
+     
+      OLED_Update();
+
+     
+      HAL_Delay(200); 
   }
   /* USER CODE END 3 */
 }
