@@ -22,14 +22,14 @@ float INA219_GetVoltage(void)
 float  INA219_GetCurrent(void)
 {
     uint8_t buf[2]; 
-    uint16_t raw_value;  
+    int16_t raw_value;  
     float real_current; 
 
     HAL_I2C_Mem_Read(&hi2c1, 0x80, 0x04, I2C_MEMADD_SIZE_8BIT, buf, 2, 100);
 
     raw_value = (buf[0] << 8) | buf[1];
 
-    real_current = raw_value * 0.1f;
+    real_current = raw_value * 0.0001f;
 
     return real_current;
 }

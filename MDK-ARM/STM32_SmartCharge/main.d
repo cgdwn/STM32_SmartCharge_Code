@@ -52,3 +52,5 @@ stm32_smartcharge\main.o: ../Core/Inc/gpio.h
 stm32_smartcharge\main.o: ../Core/Inc/oled.h
 stm32_smartcharge\main.o: ../Core/Inc/OLED_Data.h
 stm32_smartcharge\main.o: ../Core/Inc/ina219.h
+stm32_smartcharge\main.o: D:\keil5\ARM\ARMCC\Bin\..\include\string.h
+stm32_smartcharge\main.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h

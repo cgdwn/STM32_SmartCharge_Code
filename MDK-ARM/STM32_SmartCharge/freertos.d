@@ -44,3 +44,10 @@ stm32_smartcharge\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include
 stm32_smartcharge\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 stm32_smartcharge\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 stm32_smartcharge\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+stm32_smartcharge\freertos.o: ../Core/Inc/oled.h
+stm32_smartcharge\freertos.o: ../Core/Inc/OLED_Data.h
+stm32_smartcharge\freertos.o: ../Core/Inc/ina219.h
+stm32_smartcharge\freertos.o: ../Core/Inc/mqtt.h
+stm32_smartcharge\freertos.o: D:\keil5\ARM\ARMCC\Bin\..\include\string.h
+stm32_smartcharge\freertos.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32_smartcharge\freertos.o: ../Core/Inc/usart.h
