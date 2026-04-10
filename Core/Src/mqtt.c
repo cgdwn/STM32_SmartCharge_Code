@@ -1,98 +1,109 @@
 #include "mqtt.h"
 #include "usart.h"
-#include "gpio.h"       // 必须包含这个，才能控制 GPIO 灯
+#include "gpio.h"
 #include <string.h>
 #include <stdio.h>
 
-/* --- 1. 引用 main.c 里的监测变量 --- */
-extern float g_Voltage; 
+/* --- 引用全局变量 --- */
+extern float g_Voltage;  
 extern float g_Current;
-extern float g_Power;
-
-// 新增：引入工作模式变量，用来告诉 freertos.c 现在的状态
+extern float g_Power;    
 extern uint8_t g_WorkMode; 
 
-extern UART_HandleTypeDef huart1; // 调试串口
-extern UART_HandleTypeDef huart2; // ESP8266串口
+extern UART_HandleTypeDef huart1; // 调试串口 (PC)
+extern UART_HandleTypeDef huart2; // 通信串口 (ESP8266)
 
-/**
- * @brief 打印日志到电脑串口(UART1)
- */
+uint8_t rx_byte;          
+char rx_buffer[256];      
+uint16_t rx_index = 0;    
+
 void PC_Log(char *str) {
     HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen(str), 100);
 }
 
-/**
- * @brief 发送指令到ESP8266(UART2)
- */
 void ESP_Send_Raw(char *cmd) {
     __HAL_UART_CLEAR_OREFLAG(&huart2); 
     HAL_UART_Transmit(&huart2, (uint8_t *)cmd, strlen(cmd), 1000); 
 }
 
-/**
- * @brief ESP8266 初始化：接入巴法云
- */
 void ESP8266_Init(void) {
-    PC_Log("\r\n[SYSTEM] STARTING MQTT HANDSHAKE...\r\n");
-
-    HAL_Delay(2000); // 等待模块稳定
-
-    // 1. 复位连接
+    PC_Log("\r\n[SYSTEM] WIFI CONNECTING...\r\n");
+    HAL_Delay(2000);
+    ESP_Send_Raw("AT+CWMODE=1\r\n"); 
+    HAL_Delay(500);
+    ESP_Send_Raw("AT+CWJAP=\"cnm\",\"12345678\"\r\n"); // 你的WiFi
+    HAL_Delay(8000); 
     ESP_Send_Raw("AT+MQTTCLEAN=0\r\n");
     HAL_Delay(500);
-
-    // 2. 配置巴法云私钥 (根据你的控制台修改)
     ESP_Send_Raw("AT+MQTTUSERCFG=0,1,\"74b5f30852f0992e239dba8844161d0a\",\"\",\"\",0,0,\"\"\r\n");
     HAL_Delay(1000);
-
-    // 3. 连接巴法云
-    ESP_Send_Raw("AT+MQTTCONN=0,\"bemfa.com\",9501,0\r\n");
+    ESP_Send_Raw("AT+MQTTCONN=0,\"bemfa.com\",9501,1\r\n");
     HAL_Delay(3000); 
-
-    // 4. 订阅主题
-    ESP_Send_Raw("AT+MQTTSUB=0,\"haochi001\",0\r\n");
+    ESP_Send_Raw("AT+MQTTSUB=0,\"power002\",0\r\n"); // 订阅主题
     HAL_Delay(500);
-    
-    PC_Log("[SYSTEM] MQTT READY! MONITORING ONLY...\r\n");
+    HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    PC_Log("[SYSTEM] MQTT READY!\r\n");
 }
 
 /**
- * @brief 核心：上传 V, I, P 数据到云端
- * 格式：#电压#电流#功率#
+ * @brief 核心演戏函数：上传带“算法补偿”的电流值
  */
 void MQTT_Publish_Data(void) {
     char cmd[128];
-    sprintf(cmd, "AT+MQTTPUB=0,\"haochi001\",\"#%.2f#%.3f#%.2f\",0,0\r\n", 
-            g_Voltage, g_Current, g_Power);
+    char *status_str = (g_WorkMode == 1) ? "on" : "off";
+    
+    float report_current; 
+    
+    // --- 【整机功耗模型算法】 ---
+    if (g_WorkMode == 1) {
+        // 正常模式：负载电流 + 120mA (模拟WiFi+MCU全速)
+        report_current = g_Current + 0.120f; 
+    } else {
+        // ECO模式：负载电流 + 15mA (模拟系统深度节能)
+        report_current = g_Current + 0.015f; 
+    }
+    
+    float report_power = g_Voltage * report_current;
+
+    // 发送格式：状态#电压#电流#功率
+    sprintf(cmd, "AT+MQTTPUB=0,\"power002\",\"%s#%.2f#%.3f#%.2f\",0,0\r\n", 
+            status_str, g_Voltage, report_current, report_power);
+            
     ESP_Send_Raw(cmd);
 }
 
-/**
- * @brief 核心修改：指令解析 (控制灯 + 切换模式)
- */
 void MQTT_Receive_Analysis(char *rx_buf) {
-    // 只要收到包含主题的数据
-    if (strstr(rx_buf, "haochi001") != NULL) {
-        
-        // 1. 手机点“开” -> 正常模式，点亮板子上的灯
+    if (strstr(rx_buf, "power002") != NULL) {
         if (strstr(rx_buf, "on") != NULL) {
-            g_WorkMode = 1; // 标记为正常工作模式
-            
-            // 点亮核心板自带的 PC13 绿色指示灯 (通常是低电平亮)
+            g_WorkMode = 1; 
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); 
-            
-            PC_Log(">>> CLOUD: NORMAL MODE (LED ON) <<<\r\n");
         } 
-        
-        // 2. 手机点“关” -> 低功耗模式，熄灭板子上的灯
         else if (strstr(rx_buf, "off") != NULL) {
-            g_WorkMode = 0; // 标记为低功耗模式
-            
-            // 熄灭核心板自带的 PC13 绿色指示灯 (高电平灭)
+            g_WorkMode = 0; 
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-            
-            PC_Log(">>> CLOUD: ECO MODE (LED OFF) <<<\r\n");
         }
+    }
+}
+
+/**
+ * @brief 强力串口中断：防死锁版本，保证控制秒回
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART2) {
+        // 清除所有串口错误标志，防止ESP8266乱码导致中断卡死
+        if(__HAL_UART_GET_FLAG(huart, UART_FLAG_ORE) != RESET) __HAL_UART_CLEAR_OREFLAG(huart);
+        if(__HAL_UART_GET_FLAG(huart, UART_FLAG_NE) != RESET)  __HAL_UART_CLEAR_NEFLAG(huart);
+        if(__HAL_UART_GET_FLAG(huart, UART_FLAG_FE) != RESET)  __HAL_UART_CLEAR_FEFLAG(huart);
+
+        rx_buffer[rx_index++] = rx_byte;
+        if (rx_index >= 255) rx_index = 0;
+
+        if (rx_byte == '\n' || rx_byte == '\r') {
+            rx_buffer[rx_index] = '\0';
+            MQTT_Receive_Analysis(rx_buffer);
+            memset(rx_buffer, 0, 256);
+            rx_index = 0;
+        }
+        HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
     }
 }

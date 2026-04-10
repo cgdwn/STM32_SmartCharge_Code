@@ -61,8 +61,6 @@ void Error_Handler(void);
 #define LED_SYS_GPIO_Port GPIOC
 #define BTN_FORCE_Pin GPIO_PIN_0
 #define BTN_FORCE_GPIO_Port GPIOA
-#define RELAY_CTRL_Pin GPIO_PIN_4
-#define RELAY_CTRL_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

@@ -51,3 +51,4 @@ stm32_smartcharge\freertos.o: ../Core/Inc/mqtt.h
 stm32_smartcharge\freertos.o: D:\keil5\ARM\ARMCC\Bin\..\include\string.h
 stm32_smartcharge\freertos.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
 stm32_smartcharge\freertos.o: ../Core/Inc/usart.h
+stm32_smartcharge\freertos.o: ../Core/Inc/can.h
